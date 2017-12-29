@@ -1,5 +1,5 @@
 header {
-	height: 200px;
+	height: 100px;
 	width: 500px;
 	margin: 0 auto;
 	margin: auto;
@@ -7,4 +7,15 @@ header {
 	font-weight: bold;
 	color: red;
 	text-align: center;
+}
+.container{
+	height: 600px;
+	width: 100%;
+	background-color: red;
+}
+.chessboard{
+	height: 600px;
+	width: 600px;
+	margin: 0 auto;
+	background-color: yellow;
 }
