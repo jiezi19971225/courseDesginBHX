@@ -12,6 +12,9 @@ stack={
 	},
 	top:function(){
 		return this.data[this.data.length - 1];
+	},
+	clear:function(){
+		this.data.length = 0;
 	}
 }
 //方向数组
@@ -29,33 +32,67 @@ mov=[
 path=[
 	[],[],[],[],[],[],[],[]
 ];
-
+//可行数数组
+accessible=[
+	[],[],[],[],[],[],[],[]
+]
 //存储答案
 resolution = [];
 
 cnt=0;
 //状态对象构造函数
-Statu=function(x,y,step,currentMoveWay){
-	this.x = x;
-	this.y = y;
+Statu=function(row,col,step){
+	this.row = row;
+	this.col = col;
 	this.step = step;
-	this.currentMoveWay = currentMoveWay;
+	this.currentMoveWay = 0;
+	this.order= [];
 }
-//初始化路径数组
-function initPathArray(){
+//初始化函数
+function init(){
+	stack.clear();
+	initSupportArray();
+	var beginStatu = generateRandomPositon();
+	stack.push(beginStatu);
+}
+//初始化辅助数组
+function initSupportArray(){
 	for(var i = 0;i < 8;i++){
 		for(var j = 0;j < 8;j++){
 			path[i][j] = 0;
+			accessible[i][j] = 0;
+			for(var k = 0;k < 8;k++){
+				var newI=i + mov[k][0];
+				var newJ=j + mov[k][1];
+				if(newI > 0 && newI < 8 && newJ > 0 && newJ < 8){
+					accessible[i][j]++;
+				} 
+			}
+		}
+	}	
+}
+//冒泡排序
+function bubbleSort(access,order){
+	for(var i = 0;i < 7;i++){
+		for(var j = 0;j < 7 - i;j++){
+			if(access[j]>access[j+1]){
+				var temp = order[j];
+				order[j] = order[j+1];
+				order[j+1] = temp;
+				temp = access[j];
+				access[j] = access[j+1];
+				access[j+1] = temp;
+			}
 		}
 	}
 }
 //生成随机初始位置
 function generateRandomPositon(){
-	var rx = Math.floor(Math.random()*8);
-	var ry = Math.floor(Math.random()*8);
-	var beginStatu=new Statu(rx,ry,1,0);
-	path[rx][ry]=1;
-	//console.log(beginStatu);
+	var rrow = Math.floor(Math.random()*8);
+	var rcol = Math.floor(Math.random()*8);
+	var beginStatu = new Statu(rrow,rcol,1);
+	handleNewStatu(beginStatu);
+	path[rrow][rcol]=1;
 	return beginStatu;
 }
 //记录可行方案
@@ -71,55 +108,67 @@ function recordResolution(){
 	}
 	resolution.push(res);
 }
-
+//处理新状态的可行性数组
+function handleNewStatu(statu){
+	var access = [];
+	var order = [0,1,2,3,4,5,6,7];
+	for(var i = 0;i < 8;i++){
+		var newRow = statu.row + mov[i][0];
+		var newCol = statu.col + mov[i][1];
+		if(newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8){
+			access[i] =  accessible[newRow][newCol];
+		}else{
+			access[i] = 0;
+		}
+	}
+	bubbleSort(access,order);
+	var cur = 0;
+	var currentMoveWay = 0;
+	while(order[cur] == 0 && cur < 8){
+		currentMoveWay++;
+	}
+	statu.currentMoveWay = currentMoveWay;
+	statu.order = order;
+}
+//解决函数
 function solve(){
-	var beginStatu = generateRandomPositon();
-	stack.push(beginStatu);
 	while(!stack.empty()){
 		var currentStatu = stack.top();
-		console.log(currentStatu);
+		var haveNextStatu = 0;
 		var currentMoveWay = currentStatu.currentMoveWay;
-		var tryAll = false;
-		if(currentStatu.step == 55){
-			alert('ok');
-			recordResolution();
-			path[currentStatu.x][currentStatu.y] = 0;
-			for(var i = 0;i < resolution.length;i++){
-				for(var j = 0;j < 8;j++){
-					console.log(resolution[i][j]);
-				}
-			}
-			break;
+		if(currentStatu.step == 60){
+			//recordResolution();
+			path[currentStatu.row][currentStatu.col] = 0;
 			stack.pop();
 			continue;
 		}
 		for(var i = currentMoveWay;i < 8;i++){
-			var newX = currentStatu.x + mov[i][0];
-			var newY = currentStatu.y + mov[i][1];
+			moveMay = currentStatu.order[i];
+			var newRow = currentStatu.row + mov[i][0];
+			var newCol = currentStatu.col + mov[i][1];
 			//console.log(newX,newY);
-			if(newX >= 0 && newX < 8 && newY >= 0 && newY <8 && !path[newX][newY]){
-				newStatu = new Statu(newX,newY,currentStatu.step+1,0);
-				path[newX][newY] = currentStatu.step+1;
-				currentStatu.currentMoveWay = i+1;
-				stack.push(newStatu);
-				break;
-			}
-			if(i == 7){
-				tryAll=true;
-			}
+			newStatu = new Statu(newRow,newCol,currentStatu.step+1);
+			handleNewStatu(newStatu);
+			stack.push(newStatu);
+			break;
 		}
-		if(tryAll || currentStatu.currentMoveWay == 8){
-			path[currentStatu.x][currentStatu.y] = 0;
+		if(!haveNextStatu){
+			path[currentStatu.row][currentStatu.col] = 0;
 			stack.pop();
 		}
 	}
 }
 $(document).ready(function(){
-	initPathArray();
-	solve();/*
+	$(".newRandomBtn").click(function(){
+		init();
+	});
+	$(".nextAnswerBtn").click(function(){
+		solve();
+	});
+	/*solve();/*
 	for(var i = 0;i < resolution.length;i++){
 		for(var j = 0;j < 8;j++){
 			console.log(resolution[i][j]);
 		}
-	}	*/
+	}*/
 });
