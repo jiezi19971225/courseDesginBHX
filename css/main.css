@@ -1,21 +1,45 @@
-header {
-	height: 100px;
-	width: 500px;
-	margin: 0 auto;
-	margin: auto;
-	font-size: 40px;
-	font-weight: bold;
-	color: red;
-	text-align: center;
+.button-group{
+	width: 600px;
+	height: 60px;
+	margin: 0 auto;	
+}
+.funcbtn{
+	width: 150px;
+	height 40px;
+	position: relative;
+	top: 10px;
+}
+.restartBtn{
+	background-color: blue; 
+}
+.nextAnswerBtn{
+	background-color: yellow;
+	margin-left: 75px;
+}
+.showAnimaBtn{
+	background-color: pink;
+	float: right;
 }
 .container{
 	height: 600px;
 	width: 100%;
-	background-color: red;
 }
 .chessboard{
-	height: 600px;
-	width: 600px;
+	height: 602px;
+	width: 602px;
 	margin: 0 auto;
-	background-color: yellow;
+	border: black solid 1px;
+}
+.white-gird{
+	background-color: white;
+}
+.black-gird{
+	background-color: rgba(0,0,0,.25);
+}
+.gird{
+	color: red;
+	font-size: 40px;
+	font-weight: bold;
+	line-height: 75px;
+	text-align: center;
 }

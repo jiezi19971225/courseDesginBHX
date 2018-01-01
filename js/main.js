@@ -18,7 +18,7 @@ stack={
 	}
 }
 //方向数组
-mov=[
+var mov=[
 	[-1,-2],
 	[-2,-1],
 	[-2,1],
@@ -29,17 +29,15 @@ mov=[
 	[1,-2],
 ];
 //路径数组
-path=[
+var path=[
 	[],[],[],[],[],[],[],[]
 ];
 //可行数数组
-accessible=[
+var accessible=[
 	[],[],[],[],[],[],[],[]
 ]
-//存储答案
-resolution = [];
-
-cnt=0;
+//初始状态
+var beginStatu;
 //状态对象构造函数
 Statu=function(row,col,step){
 	this.row = row;
@@ -52,7 +50,7 @@ Statu=function(row,col,step){
 function init(){
 	stack.clear();
 	initSupportArray();
-	var beginStatu = generateRandomPositon();
+	beginStatu = generateRandomPositon();
 	stack.push(beginStatu);
 }
 //初始化辅助数组
@@ -93,6 +91,7 @@ function generateRandomPositon(){
 	var beginStatu = new Statu(rrow,rcol,1);
 	handleStatuAccessible(beginStatu);
 	path[rrow][rcol]=1;
+	$(".gird-"+rrow+"-"+rcol).text(1);
 	return beginStatu;
 }
 //记录可行方案
@@ -164,13 +163,13 @@ function solve(){
 			path[currentStatu.row][currentStatu.col] = 0;
 			rollBack(currentStatu.row,currentStatu.col);
 			stack.pop();
-			return;
+			return true;
 		}
 		for(var i = currentStatu.currentMoveWay;i < 8;i++){
 			moveMay = currentStatu.order[i];
 			var newRow = currentStatu.row + mov[moveMay][0];
 			var newCol = currentStatu.col + mov[moveMay][1];
-			newStatu = new Statu(newRow,newCol,currentStatu.step+1);
+			var newStatu = new Statu(newRow,newCol,currentStatu.step+1);
 			
 			if(handleStatuAccessible(newStatu)){
 				haveNextStatu = 1;
@@ -187,18 +186,32 @@ function solve(){
 			stack.pop();
 		}
 	}
+	return false;
 }
-function generateGraph(){
+function generateGird(){
 	var chessboard = $(".chessboard");
 	for(var i = 0;i < 8;i++){
 		for(var j=0;j < 8;j++){
 			var gird = $("<div class='gird gird-"+i+"-"+j+"'></div>");
 			gird.css({
-				"width": "75px",
-				"height": "75px", 
+				"width": "12.5%",
+				"height": "12.5%", 
 				"float": "left",
 			});
+			if((i + j) % 2 == 1){
+				gird.addClass("white-gird");
+			}else{
+				gird.addClass("black-gird");
+			}
 			chessboard.append(gird);
+		}
+	}
+}
+function removeGird() {
+	for(var i = 0;i < 8;i++){
+		for(var j = 0;j < 8;j++){
+			var gird=$(".gird-"+i+"-"+j);
+			gird.remove();
 		}
 	}
 }
@@ -214,13 +227,54 @@ function drawPath(){
 		}
 	}
 }
+function rowOffset(row){
+	return row*75;
+}
+function colOffset(col){
+	return col*75;
+}
+function showAnima(){
+	var step = 1;
+	var chessboard = $(".chessboard");
+	var horse = $("<div class='horse'></div>");
+	var currentRow = beginStatu.row;
+	var currentCol = beginStatu.col;
+	chessboard.append(horse);
+	horse.css({
+		"position": "relative",
+		"height": "75px",
+		"width": "75px",
+		"background-color": "green",
+		"top": rowOffset(currentRow),
+		"left": colOffset(currentCol),
+	});/*
+	while(step <= 64){
+		for(var i = 0;i < 8;i++){
+			var nextRow = currentRow + mov[i][0];
+			var nextCol = currentCol + mov[i][1];
+			if(path[nextRow][nextCol] == step + 1){
+
+			}
+		}
+	}*/
+}
 $(document).ready(function(){
-	generateGraph();
-	$(".newRandomBtn").click(function(){
+	generateGird();
+	init();
+	$(".restartBtn").click(function(){
+		removeGird();
+		generateGird();
 		init();
 	});
 	$(".nextAnswerBtn").click(function(){
-		solve();
-		drawPath();
+		if(!solve()){
+			alert("当前是最后一组解了");
+		}else{
+			drawPath();
+		}
+	});
+	$(".showAnimaBtn").click(function(){
+		console.log(100);
+		showAnima();
 	});
 });
