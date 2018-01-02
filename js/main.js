@@ -18,6 +18,7 @@ stack={
 	}
 }
 //方向数组
+
 var mov=[
 	[-1,-2],
 	[-2,-1],
@@ -28,10 +29,15 @@ var mov=[
 	[2,-1],
 	[1,-2],
 ];
+
 //路径数组
 var path=[
 	[],[],[],[],[],[],[],[]
 ];
+//用于绘图的路径数组
+var pathToDraw=[
+	[],[],[],[],[],[],[],[]
+]
 //可行数数组
 var accessible=[
 	[],[],[],[],[],[],[],[]
@@ -46,6 +52,11 @@ Statu=function(row,col,step){
 	this.currentMoveWay = 0;
 	this.order= [];
 }
+var inAnima = false;
+var row63;
+var col63;
+var row64;
+var col64;
 //初始化函数
 function init(){
 	stack.clear();
@@ -90,32 +101,33 @@ function generateRandomPositon(){
 	var rcol = Math.floor(Math.random()*8);
 	var beginStatu = new Statu(rrow,rcol,1);
 	handleStatuAccessible(beginStatu);
+	adjust(rrow,rcol);
 	path[rrow][rcol]=1;
 	$(".gird-"+rrow+"-"+rcol).text(1);
 	return beginStatu;
 }
-//记录可行方案
-function recordResolution(){
-	var res=[];
-	for(var i = 0;i < 8;i++){
-		res[i]=[];
-	}
-	for(var i = 0;i < 8;i++){
-		for(var j = 0;j < 8;j++){
-			res[i][j] = path[i][j];
-		}
-	}
-	resolution.push(res);
-}
 //处理状态的可行性数组
 function handleStatuAccessible(statu){
+	if(statu.step == 63){
+		for(var i = 0;i < 8;i++){
+			var newRow = statu.row + mov[i][0];
+			var newCol = statu.col + mov[i][1];
+			if(newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8 && !path[newRow][newCol]){
+				row63 = statu.row,col63 = statu.col,row64 = newRow,col64 = newCol;
+				return true;
+			}
+		}
+		return false;
+	}
+
+
 	var access = [];
 	var order = [0,1,2,3,4,5,6,7];
 	for(var i = 0;i < 8;i++){
 		var newRow = statu.row + mov[i][0];
 		var newCol = statu.col + mov[i][1];
 		if(newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8 && !path[newRow][newCol]){
-				access[i] =  accessible[newRow][newCol] - 1;
+				access[i] = accessible[newRow][newCol] - 1;
 		}else{
 			access[i] = 0;
 		}
@@ -154,29 +166,37 @@ function rollBack(row,col){
 }
 //生成一组答案
 function solve(){
+	var cnt = 0;
+
 	while(!stack.empty()){
 		var currentStatu = stack.top();
 		var haveNextStatu = 0;
+		console.log(currentStatu);
 		var currentMoveWay = currentStatu.currentMoveWay;
-		if(currentStatu.step == 63){
-			console.log("ok");
-			path[currentStatu.row][currentStatu.col] = 0;
-			rollBack(currentStatu.row,currentStatu.col);
-			stack.pop();
-			return true;
-		}
+
 		for(var i = currentStatu.currentMoveWay;i < 8;i++){
+			console.log(currentStatu);
 			moveMay = currentStatu.order[i];
 			var newRow = currentStatu.row + mov[moveMay][0];
 			var newCol = currentStatu.col + mov[moveMay][1];
 			var newStatu = new Statu(newRow,newCol,currentStatu.step+1);
-			
-			if(handleStatuAccessible(newStatu)){
+			if(currentStatu.step == 62){
+				for(var i = 0;i < 8;i++){
+					var lastRow = newRow + mov[i][0];
+					var lastCol = newCol + mov[i][1];
+					if(lastRow >= 0 && lastRow < 8 && lastCol >= 0 && lastCol < 8 && !path[lastRow][lastCol]){
+						console.log(lastRow,lastCol,path[lastRow][lastCol])
+						row63 = newRow,col63 = newCol,row64 = lastRow,col64 = lastCol;
+						currentStatu.currentMoveWay++;
+						return true;
+					}
+				}
+			}else if(handleStatuAccessible(newStatu)){
 				haveNextStatu = 1;
 				stack.push(newStatu);
 				adjust(newRow,newCol);
 				path[newRow][newCol] = currentStatu.step + 1;
-				currentStatu.currentMoveWay += 1;
+				currentStatu.currentMoveWay = i + 1;
 				break;	
 			}
 		}
@@ -207,23 +227,27 @@ function generateGird(){
 		}
 	}
 }
-function removeGird() {
+function removeGird(){
 	for(var i = 0;i < 8;i++){
 		for(var j = 0;j < 8;j++){
 			var gird=$(".gird-"+i+"-"+j);
 			gird.remove();
 		}
 	}
+	$(".horse").remove();
 }
 function drawPath(){
 	for(var i = 0;i < 8;i++){
 		for(var j = 0;j < 8;j++){
+			pathToDraw[i][j] = path[i][j];
+		}
+	}
+	pathToDraw[row63][col63] = 63;
+	pathToDraw[row64][col64] = 64;
+	for(var i = 0;i < 8;i++){
+		for(var j = 0;j < 8;j++){
 			var gird = $(".gird-"+i+"-"+j);
-			if(path[i][j]==0){
-				gird.text(64);
-			}else{
-				gird.text(path[i][j]);
-			}
+			gird.text(pathToDraw[i][j]);
 		}
 	}
 }
@@ -234,6 +258,7 @@ function colOffset(col){
 	return col*75;
 }
 function showAnima(){
+	inAnima = true;
 	var step = 1;
 	var chessboard = $(".chessboard");
 	var horse = $("<div class='horse'></div>");
@@ -244,19 +269,38 @@ function showAnima(){
 		"position": "relative",
 		"height": "75px",
 		"width": "75px",
-		"background-color": "green",
+		"background-image": "url('image/horse.jpg')",
 		"top": rowOffset(currentRow),
 		"left": colOffset(currentCol),
-	});/*
-	while(step <= 64){
+	});
+	while(step < 64){
+		console.log(step);
 		for(var i = 0;i < 8;i++){
 			var nextRow = currentRow + mov[i][0];
 			var nextCol = currentCol + mov[i][1];
-			if(path[nextRow][nextCol] == step + 1){
-
+			console.log(nextRow,nextCol);
+			if(nextRow >= 0 && nextRow < 8 && nextCol >= 0 && nextCol < 8 && pathToDraw[nextRow][nextCol] == step + 1){
+				if(step == 63){
+					horse.animate({
+					left: colOffset(nextCol),
+					top: rowOffset(nextRow)
+					},function(){
+						$(".showAnimaBtn").removeClass("disabled").attr("disabled",false);
+					});
+				}else{
+					horse.animate({
+					left: colOffset(nextCol),
+					top: rowOffset(nextRow)
+					});
+				}
+				
+				currentRow = nextRow;
+				currentCol = nextCol;
+				step++
+				break;
 			}
 		}
-	}*/
+	}
 }
 $(document).ready(function(){
 	generateGird();
@@ -267,14 +311,20 @@ $(document).ready(function(){
 		init();
 	});
 	$(".nextAnswerBtn").click(function(){
+		$(".horse").remove();
 		if(!solve()){
 			alert("当前是最后一组解了");
 		}else{
 			drawPath();
+
+			$(".showAnimaBtn").removeClass("disabled").attr("disabled",false);
+
 		}
+
 	});
 	$(".showAnimaBtn").click(function(){
-		console.log(100);
+		$(".horse").remove();
+		$(".showAnimaBtn").addClass("disabled").attr("disabled",true);
 		showAnima();
 	});
 });

@@ -1,3 +1,7 @@
+body{
+	background-repeat: repeat; 
+	background-image: url("../image/background.jpg");
+}
 .button-group{
 	width: 600px;
 	height: 60px;
@@ -10,14 +14,11 @@
 	top: 10px;
 }
 .restartBtn{
-	background-color: blue; 
 }
 .nextAnswerBtn{
-	background-color: yellow;
 	margin-left: 75px;
 }
 .showAnimaBtn{
-	background-color: pink;
 	float: right;
 }
 .container{
@@ -34,7 +35,7 @@
 	background-color: white;
 }
 .black-gird{
-	background-color: rgba(0,0,0,.25);
+	background-color: #666;
 }
 .gird{
 	color: red;
