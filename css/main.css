@@ -1,5 +1,4 @@
 body{
-	background-repeat: repeat; 
 	background-image: url("../image/background.jpg");
 }
 .button-group{
@@ -13,12 +12,24 @@ body{
 	position: relative;
 	top: 10px;
 }
-.restartBtn{
+.control-btn-group{
+	width: 100%;
 }
-.nextAnswerBtn{
-	margin-left: 75px;
+.current-cur{
+	width: 600px;
+	text-align: center;
+	margin: 0 auto;
+	font-size: 30px;
+	color: yellow;
+
 }
-.showAnimaBtn{
+.number-input{
+	width: 100px;
+	height 60px;
+	position: relative;
+	top: 10px;
+}
+.number-input-group{
 	float: right;
 }
 .container{
@@ -26,6 +37,7 @@ body{
 	width: 100%;
 }
 .chessboard{
+	position: relative;
 	height: 602px;
 	width: 602px;
 	margin: 0 auto;
@@ -43,4 +55,10 @@ body{
 	font-weight: bold;
 	line-height: 75px;
 	text-align: center;
+}
+.queen{
+	position: absolute;
+	width: 12.5%;
+	height: 12.5%;
+	background-image: url("../image/queen.jpg");
 }
